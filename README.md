@@ -1,0 +1,2 @@
+#Installation
+```stack init --solver```
