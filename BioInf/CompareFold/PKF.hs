@@ -1,4 +1,4 @@
-
+-- Knot free Grammar algorithm
 module BioInf.CompareFold.PKF where
 
 import           Control.Applicative
