@@ -64,6 +64,8 @@ library
   exposed-modules:
     BioInf.CompareFold
     BioInf.CompareFold.PKF
+    BioInf.CompareFold.RandG
+    BioInf.CompareFold.LandP
   default-language:
     Haskell2010
   default-extensions: BangPatterns

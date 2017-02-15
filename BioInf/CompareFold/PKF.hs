@@ -102,8 +102,6 @@ runInsideForward :: VU.Vector Char -> Z:.X-- :.T:.T
 runInsideForward i = mutateTablesDefault -- WithHints (Proxy :: Proxy MonotoneMCFG)
                    $ gPKF bpmax
                         (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
-                        -- (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-777999) []))
-                        -- (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-888999) []))
                         (chr i)
   where n = VU.length i
 {-# NoInline runInsideForward #-}
@@ -112,7 +110,5 @@ runInsideBacktrack :: VU.Vector Char -> Z:.X -> [[String]]-- :.T:.T -> [[String]
 runInsideBacktrack i (Z:.t) = unId $ axiom b -- :.u:.v) = unId $ axiom b
   where !(Z:.b) = gPKF (bpmax <|| pretty)  -- :._:._
                           (toBacktrack t (undefined :: Id a -> Id a))
-                          -- (toBacktrack u (undefined :: Id a -> Id a))
-                          -- (toBacktrack v (undefined :: Id a -> Id a))
                           (chr i)
 {-# NoInline runInsideBacktrack #-}
