@@ -9,12 +9,12 @@ import           Data.List
 import           Data.Vector.Fusion.Util
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
-import qualified Data.Vector.Fusion.Stream as S
+-- import qualified Data.Vector.Fusion.Stream as S
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
 import qualified Data.Vector.Unboxed as VU
 import           Text.Printf
 
-import           ADP.Fusion
+import           ADP.Fusion.Subword
 import           Data.PrimitiveArray as PA hiding (map)
 
 import           FormalLanguage
@@ -34,10 +34,10 @@ S: S
 S -> unp <<< c S
 S -> nil <<< e
 S -> jux <<< c T c T
-S -> pse <<< T V O V O
 T -> nil2 <<< e
 T -> unp2 <<< c T
 T -> jux2 <<< c T c T
+S -> pse <<< T V O V O
 <O,O> -> pk1 <<< [c,-] [T,-] <V,V> [-,c] [-,T]
 <V,V> -> pk2 <<< [c,-] [T,-] <V,V> [-,c] [-,T]
 <V,V> -> pair1 <<< [c,-] [T,-] [-,c] [-,T]
@@ -47,7 +47,7 @@ Emit: LandP
 |]
 makeAlgebraProduct ''SigLandP
 
-bpmax :: Monad m => SigLandP m Int Int Char
+bpmax :: Monad m => SigLandP m Int Int Char Char
 bpmax = SigLandP
   { unp    = \ c x               -> x
   , nil    = \ ()                -> 0
@@ -73,7 +73,7 @@ pairs !c !d
   || c=='U' && d=='G'
 {-# INLINE pairs #-}
 
-pretty :: Monad m => SigLandP m [String] [[String]] Char
+pretty :: Monad m => SigLandP m [String] [[String]] Char Char
 pretty = SigLandP
   { unp   = \ c [x] -> [x ++ "."]
   , jux   = \ c [x] d  [y] -> ["(" ++ x ++ ")" ++ y]
@@ -90,8 +90,8 @@ pretty = SigLandP
 }
 {-# INLINE pretty #-}
 
-randgPairMax :: Int -> String -> (Int, [[String]])
-randgPairMax k inp =
+landpPairMax :: Int -> String -> (Int, [[String]])
+landpPairMax k inp =
   error "not implemented"
 --   (d, take k bs) where
 --    i = VU.fromList . Prelude.map toUpper $ inp
@@ -102,19 +102,20 @@ randgPairMax k inp =
 -- {-# NOINLINE randgPairMax #-}
 
 
-type X = ITbl Id Unboxed Subword Int
-type T = ITbl Id Unboxed (Z:.Subword:.Subword) Int
+type X = TwITbl Id Unboxed EmptyOk (Subword I) Int
+type T = TwITbl Id Unboxed (Z:.EmptyOk:.EmptyOk) (Z:.Subword I:.Subword I) Int
 
 
-runInsideForward :: VU.Vector Char -> Z:.X:.T:.T:.T
+runInsideForward :: VU.Vector Char -> Z:.T:.X:.X:.T
 runInsideForward i =
   -- error "not implemented"
   mutateTablesWithHints (Proxy :: Proxy MonotoneMCFG)
                    $ gLandP bpmax
-                        (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
-                        (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
                         (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-777999) []))
+                        (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
+                        (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
                         (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-888999) []))
+                        (chr i)
                         (chr i)
   where n = VU.length i
 {-# NoInline runInsideForward #-}

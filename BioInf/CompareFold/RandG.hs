@@ -9,12 +9,12 @@ import           Data.List
 import           Data.Vector.Fusion.Util
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
-import qualified Data.Vector.Fusion.Stream as S
+--import qualified Data.Vector.Fusion.Stream as S
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
 import qualified Data.Vector.Unboxed as VU
 import           Text.Printf
 
-import           ADP.Fusion
+import           ADP.Fusion.Subword
 import           Data.PrimitiveArray as PA hiding (map)
 
 import           FormalLanguage
@@ -42,7 +42,7 @@ Emit: RandG
 |]
 makeAlgebraProduct ''SigRandG
 
-bpmax :: Monad m => SigRandG m Int Int Char
+bpmax :: Monad m => SigRandG m Int Int Char Char
 bpmax = SigRandG
   { unp   = \ c x                   -> x
   , nil   = \ ()                    -> 0
@@ -64,7 +64,7 @@ pairs !c !d
   || c=='U' && d=='G'
 {-# INLINE pairs #-}
 
-pretty :: Monad m => SigRandG m [String] [[String]] Char
+pretty :: Monad m => SigRandG m [String] [[String]] Char Char
 pretty = SigRandG
   { unp   = \ c [x] -> [x ++ "."]
   , jux   = \ c [x] d  [y] -> ["(" ++ x ++ ")" ++ y]
@@ -89,20 +89,20 @@ randgPairMax k inp =
 -- {-# NOINLINE randgPairMax #-}
 
 
-type X = ITbl Id Unboxed Subword Int
-type T = ITbl Id Unboxed (Z:.Subword:.Subword) Int
+type X = TwITbl Id Unboxed EmptyOk (Subword I) Int
+type T = TwITbl Id Unboxed (Z:.EmptyOk:.EmptyOk) (Z:.Subword I:.Subword I) Int
 
 
-runInsideForward :: VU.Vector Char -> Z:.X:.T:.T
+runInsideForward :: VU.Vector Char -> Z:.T:.X:.T
 runInsideForward i =
-  error "not implemented"
-  -- mutateTablesWithHints (Proxy :: Proxy MonotoneMCFG)
-  --                  $ gRandG bpmax
-  --                       (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
-  --                       (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-777999) []))
-  --                       (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-888999) []))
-  --                       (chr i)
-  -- where n = VU.length i
+  mutateTablesWithHints (Proxy :: Proxy MonotoneMCFG)
+                   $ gRandG bpmax
+                        (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-777999) []))
+                        (ITbl 0 0 EmptyOk (PA.fromAssocs (subword 0 0) (subword 0 n) (-666999) []))
+                        (ITbl 0 0 (Z:.EmptyOk:.EmptyOk) (PA.fromAssocs (Z:.subword 0 0:.subword 0 0) (Z:.subword 0 n:.subword 0 n) (-888999) []))
+                        (chr i)
+                        (chr i)
+  where n = VU.length i
 {-# NoInline runInsideForward #-}
 runInsideBacktrack :: VU.Vector Char -> Z:.X:.T:.T -> [[String]]
 runInsideBacktrack i (Z:.t:.u:.v) =

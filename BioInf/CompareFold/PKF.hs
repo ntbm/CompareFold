@@ -9,12 +9,12 @@ import           Data.List
 import           Data.Vector.Fusion.Util
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
-import qualified Data.Vector.Fusion.Stream as S
+--import qualified Data.Vector.Fusion.Stream as S
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
 import qualified Data.Vector.Unboxed as VU
 import           Text.Printf
 
-import           ADP.Fusion
+import           ADP.Fusion.Subword
 import           Data.PrimitiveArray as PA hiding (map)
 
 import           FormalLanguage
@@ -95,8 +95,7 @@ pkfPairMax k inp = (d, take k bs) where
   bs = runInsideBacktrack i (Z:.t) -- :.u:.v
 {-# NOINLINE pkfPairMax #-}
 
-type X = ITbl Id Unboxed Subword Int
-type T = ITbl Id Unboxed (Z:.Subword:.Subword) Int
+type X = TwITbl Id Unboxed EmptyOk (Subword I) Int
 
 runInsideForward :: VU.Vector Char -> Z:.X-- :.T:.T
 runInsideForward i = mutateTablesDefault -- WithHints (Proxy :: Proxy MonotoneMCFG)
