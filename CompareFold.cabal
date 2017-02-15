@@ -94,7 +94,7 @@ library
 
 -- Wrapper for the library
 
-executable GenussFold
+executable compareFold
   build-depends: base
                , cmdargs          >= 0.10
                , FormalGrammars

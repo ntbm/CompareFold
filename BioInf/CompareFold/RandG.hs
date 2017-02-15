@@ -36,7 +36,8 @@ S -> jux <<< c S c S
 S -> pse <<< O S V S O S V S
 <O,O> -> pk1 <<< [c,-] <V,V> [-,c]
 <V,V> -> pk2 <<< [c,-] <V,V> [-,c]
-<V,V> -> pair1 <<< [c,c]
+<O,O> -> pair1 <<< [c,c]
+<V,V> -> pair2 <<< [c,c]
 //
 Emit: RandG
 |]
@@ -51,6 +52,7 @@ bpmax = SigRandG
   , pk1 = \ (Z:.a:.()) y (Z:.():.b) -> if a `pairs` b then  y + 1 else -777777
   , pk2 = \ (Z:.a:.()) y (Z:.():.b) -> if a `pairs` b then  y + 1 else -777777
   , pair1 = \ (Z:.c:.d)             -> if c `pairs` d then 1 else -888888 -- \ (Z:.():.()) -> 0
+  , pair2 = \ (Z:.c:.d)             -> if c `pairs` d then 1 else -888888 -- \ (Z:.():.()) -> 0
   , h     = SM.foldl' max (-999999)
 }
 {-# INLINE bpmax #-}
@@ -72,21 +74,21 @@ pretty = SigRandG
   , nil   = \ () -> [""]
   , h     = SM.toList
   , pk1 = \ (Z:.a:.()) [y1,y2] (Z:.():.b) -> ["[" ++ y1 , y2 ++ "]"]
-  , pk2 = \ (Z:.a:.()) [y1,y2] (Z:.():.b) -> ["[" ++ y1 , y2 ++ "]"]
+  , pk2 = \ (Z:.a:.()) [y1,y2] (Z:.():.b) -> ["{" ++ y1 , y2 ++ "}"]
   , pair1 = \ (Z:.c1:.c2) -> ["[1"++"]1"] -- \ (Z:.():.()) -> ["",""]
+  , pair2 = \ (Z:.c1:.c2) -> ["[2"++"]2"] -- \ (Z:.():.()) -> ["",""]
 }
 {-# INLINE pretty #-}
 
 randgPairMax :: Int -> String -> (Int, [[String]])
 randgPairMax k inp =
-  error "not implemented"
---   (d, take k bs) where
---    i = VU.fromList . Prelude.map toUpper $ inp
---    n = VU.length i
---    !(Z:.t:.u:.v:.w:.x) = runInsideForward i
---    d = unId $ axiom t
---    bs = runInsideBacktrack i (Z:.t:.u:.v)
--- {-# NOINLINE randgPairMax #-}
+  (d, take k bs) where
+   i = VU.fromList . Prelude.map toUpper $ inp
+   n = VU.length i
+   !(Z:.t:.u:.v) = runInsideForward i
+   d = unId $ axiom u -- Start Symbol
+   bs = runInsideBacktrack i (Z:.t:.u:.v)
+{-# NOINLINE randgPairMax #-}
 
 
 type X = TwITbl Id Unboxed EmptyOk (Subword I) Int
@@ -104,13 +106,19 @@ runInsideForward i =
                         (chr i)
   where n = VU.length i
 {-# NoInline runInsideForward #-}
-runInsideBacktrack :: VU.Vector Char -> Z:.X:.T:.T -> [[String]]
+
+type X' = TwITblBt Unboxed EmptyOk (Subword I) Int Id Id [String]
+type T' = TwITblBt Unboxed (Z:.EmptyOk:.EmptyOk) (Z:.Subword I:.Subword I) Int Id Id [String]
+
+runInsideBacktrack :: VU.Vector Char -> Z:.T:.X:.T -> [[String]]
 runInsideBacktrack i (Z:.t:.u:.v) =
-  error "Not Implemented"
-  -- unId $ axiom b
---   where !(Z:.b:._:._) = gRandG (bpmax <|| pretty)
---                           (toBacktrack t (undefined :: Id a -> Id a))
---                           (toBacktrack u (undefined :: Id a -> Id a))
---                           (toBacktrack v (undefined :: Id a -> Id a))
---                           (chr i)
--- {-# NoInline runInsideBacktrack #-}
+  -- error "Not Implemented"
+  unId $ axiom b -- StartSymbol
+  where !(Z:._:.b:._) = gRandG (bpmax <|| pretty)
+                          (toBacktrack t (undefined :: Id a -> Id a))
+                          (toBacktrack u (undefined :: Id a -> Id a))
+                          (toBacktrack v (undefined :: Id a -> Id a))
+                          (chr i)
+                          (chr i)
+                          :: Z:.T':.X':.T'
+{-# NoInline runInsideBacktrack #-}
