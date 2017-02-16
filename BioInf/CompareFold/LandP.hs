@@ -9,7 +9,7 @@ import           Data.List
 import           Data.Vector.Fusion.Util
 import           Language.Haskell.TH
 import           Language.Haskell.TH.Syntax
--- import qualified Data.Vector.Fusion.Stream as S
+
 import qualified Data.Vector.Fusion.Stream.Monadic as SM
 import qualified Data.Vector.Unboxed as VU
 import           Text.Printf
@@ -82,24 +82,24 @@ pretty = SigLandP
   , jux2   = \ c [x] d  [y] -> ["(" ++ x ++ ")" ++ y]
   , nil2   = \ () -> [""]
   , pse   = \ [s1] () () [x1,x2] [y1,y2] -> [s1 ++ x1 ++ y1 ++ x2 ++ y2]
-  , h     = SM.toList
   , pk1 = \ (Z:.a:.()) (Z:.[t1]:.()) [y1,y2] (Z:.():.b) (Z:.():.[t2]) -> ["[" ++ t1 ++ y1 , y2 ++ "]" ++ t2]
   , pk2 = \ (Z:.a:.()) (Z:.[t1]:.()) [y1,y2] (Z:.():.b) (Z:.():.[t2]) -> ["[" ++ t1 ++ y1 , y2 ++ "]" ++ t2]
   , pair1 = \ (Z:.c1:.()) (Z:.[t1]:.()) (Z:.():.c2) (Z:.():.[t2]) -> ["[1"++ t1 , "]1" ++ t2]
-  , pair2 = \ (Z:.c1:.()) (Z:.[t1]:.()) (Z:.():.c2) (Z:.():.[t2]) -> ["[1"++ t1 , "]1" ++ t2]
+  , pair2 = \ (Z:.c1:.()) (Z:.[t1]:.()) (Z:.():.c2) (Z:.():.[t2]) -> ["[2"++ t1 , "]2" ++ t2]
+  , h     = SM.toList
 }
 {-# INLINE pretty #-}
 
 landpPairMax :: Int -> String -> (Int, [[String]])
 landpPairMax k inp =
-  error "not implemented"
---   (d, take k bs) where
---    i = VU.fromList . Prelude.map toUpper $ inp
---    n = VU.length i
---    !(Z:.t:.u:.v:.w:.x) = runInsideForward i
---    d = unId $ axiom t
---    bs = runInsideBacktrack i (Z:.t:.u:.v)
--- {-# NOINLINE randgPairMax #-}
+  -- error "not implemented"
+  (d, take k bs) where
+   i = VU.fromList . Prelude.map toUpper $ inp
+   n = VU.length i
+   !(Z:.t:.u:.v:.w) = runInsideForward i
+   d = unId $ axiom u
+   bs = runInsideBacktrack i (Z:.t:.u:.v:.w)
+{-# NOINLINE landpPairMax #-}
 
 
 type X = TwITbl Id Unboxed EmptyOk (Subword I) Int
@@ -119,13 +119,21 @@ runInsideForward i =
                         (chr i)
   where n = VU.length i
 {-# NoInline runInsideForward #-}
-runInsideBacktrack :: VU.Vector Char -> Z:.X:.T:.T -> [[String]]
-runInsideBacktrack i (Z:.t:.u:.v) =
-  error "Not Implemented"
-  -- unId $ axiom b
---   where !(Z:.b:._:._) = gRandG (bpmax <|| pretty)
---                           (toBacktrack t (undefined :: Id a -> Id a))
---                           (toBacktrack u (undefined :: Id a -> Id a))
---                           (toBacktrack v (undefined :: Id a -> Id a))
---                           (chr i)
--- {-# NoInline runInsideBacktrack #-}
+
+type X' = TwITblBt Unboxed EmptyOk (Subword I) Int Id Id [String]
+type T' = TwITblBt Unboxed (Z:.EmptyOk:.EmptyOk) (Z:.Subword I:.Subword I) Int Id Id [String]
+
+
+runInsideBacktrack :: VU.Vector Char -> Z:.T:.X:.X:.T -> [[String]]
+runInsideBacktrack i (Z:.t:.u:.v:.w) =
+  -- error "Not Implemented"
+  unId $ axiom b
+  where !(Z:._:.b:._:._) = gLandP (bpmax <|| pretty)
+                          (toBacktrack t (undefined :: Id a -> Id a))
+                          (toBacktrack u (undefined :: Id a -> Id a))
+                          (toBacktrack v (undefined :: Id a -> Id a))
+                          (toBacktrack w (undefined :: Id a -> Id a))
+                          (chr i)
+                          (chr i)
+                          :: Z:.T':.X':.X':.T'
+{-# NoInline runInsideBacktrack #-}
