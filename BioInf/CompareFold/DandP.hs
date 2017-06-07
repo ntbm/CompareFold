@@ -1,3 +1,4 @@
+-- Dirks and Pierce Pseudoknot Grammar Class
 module BioInf.CompareFold.DandP where
 
 import           Control.Applicative

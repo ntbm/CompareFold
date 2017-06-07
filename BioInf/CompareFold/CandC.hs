@@ -1,4 +1,4 @@
--- Reeder and Giegerich Pseudoknot Class
+-- Cao and Chen Pseudoknot Class
 module BioInf.CompareFold.CandC where
 
 import           Control.Applicative
