@@ -27,6 +27,21 @@ main = do
     Nussinov{..} -> do
       ls <- lines <$> getContents
       forM_ ls $ \l -> do
+        let (r,bs) = pkfPairMax coopts l
+        printf "PKF\t \t %s   %d\n" l r
+        forM_ bs $ \[b] -> printf "PKF\t \t %s   %d\n" b r
         let (r,bs) = randgPairMax coopts l
-        printf "%s   %d\n" l r
-        forM_ bs $ \[b] -> printf "%s   %d\n" b r
+        printf "RandG\t \t %s   %d\n" l r
+        forM_ bs $ \[b] -> printf "RandG\t \t %s   %d\n" b r
+        let (r,bs) = landpPairMax coopts l
+        printf "LandP\t \t %s   %d\n" l r
+        forM_ bs $ \[b] -> printf "LandP\t \t %s   %d\n" b r 
+        let (r,bs) = landPplusPairMax coopts l
+        printf "LandPplus\t %s   %d\n" l r
+        forM_ bs $ \[b] -> printf "LandPplus\t %s   %d\n" b r
+        let (r,bs) = candCPairMax coopts l
+        printf "CandC\t \t %s   %d\n" l r
+        forM_ bs $ \[b] -> printf "CandC\t\t %s   %d\n" b r
+        let (r,bs) = dandpPairMax coopts l
+        printf "DandP\t \t %s   %d\n" l r
+        forM_ bs $ \[b] -> printf "DandP\t \t %s   %d\n" b r

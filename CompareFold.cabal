@@ -67,6 +67,8 @@ library
     BioInf.CompareFold.RandG
     BioInf.CompareFold.LandP
     BioInf.CompareFold.LandPplus
+    BioInf.CompareFold.CandC
+    BioInf.CompareFold.DandP
   default-language:
     Haskell2010
   default-extensions: BangPatterns
